@@ -2,6 +2,7 @@ import pytest
 from flask import Flask
 from pymongo import MongoClient
 from src.main import create_app
+from settings import settings
 
 
 @pytest.fixture
@@ -10,8 +11,8 @@ def app():
     app = create_app()
 
     app.config["TESTING"] = True
-    app.config["MONGO_DATABASE_URI"] = "mongodb://localhost:27017"
-    app.config["MONGO_DATABASE_NAME"] = "test_db"
+    app.config["MONGO_DATABASE_URI"] = settings.MONGO_DATABASE_URI
+    app.config["MONGO_DATABASE_NAME"] = settings.MONGO_DATABASE_NAME
 
     with app.app_context():
         client = MongoClient(app.config["MONGO_DATABASE_URI"])
