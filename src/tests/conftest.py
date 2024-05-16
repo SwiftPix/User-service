@@ -2,8 +2,8 @@ import pytest
 from flask import Flask
 from pymongo import MongoClient
 from src.main import create_app
-from settings import settings
-
+from src.database.db import initialize_mongo
+from src.settings import settings
 
 @pytest.fixture
 def app():
@@ -14,6 +14,8 @@ def app():
     app.config["MONGO_DATABASE_URI"] = settings.MONGO_DATABASE_URI
     app.config["MONGO_DATABASE_NAME"] = settings.MONGO_DATABASE_NAME
 
+    initialize_mongo(app)
+
     with app.app_context():
         client = MongoClient(app.config["MONGO_DATABASE_URI"])
         db = client[app.config["MONGO_DATABASE_NAME"]]
@@ -23,7 +25,6 @@ def app():
 
         db.users.delete_many({})
         client.close()
-
 
 @pytest.fixture
 def client(app):

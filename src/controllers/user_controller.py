@@ -1,6 +1,6 @@
 import bcrypt
-from database.models import User
-from utils.exceptions import UserAlreadyExistsException, LoginException
+from src.database.models import User
+from src.utils.exceptions import UserAlreadyExistsException, LoginException
 
 class UserController:
     @staticmethod

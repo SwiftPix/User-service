@@ -1,17 +1,14 @@
 from flask import Flask
-from views.api import bp as views_bp
-from database.db import initialize_mongo
-from settings import settings
+from src.views.api import bp as views_bp
+from src.database.db import initialize_mongo
+from src.settings import settings
 
 def create_app():
     app = Flask(__name__)
 
     app.config.from_object(settings)
-
-    db = initialize_mongo()
-
+    db = initialize_mongo(app)
     app.mongo_db = db
-
     app.register_blueprint(views_bp)
 
     return app
