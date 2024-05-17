@@ -1,17 +1,16 @@
 import bcrypt
-from src.main import create_app
+import pymongo
+from src.settings import settings
 
-app = create_app()
-
-db = app.mongo_db
-
+db_client = pymongo.MongoClient(settings.MONGO_DATABASE_URI)
+db = db_client.get_database(settings.MONGO_DATABASE_NAME)
 
 class User:
-    def __init__(self, name, email, cellphone, hash_password, salt):
+    def __init__(self, name, email, cellphone, password, salt):
         self.name = name
         self.email = email
         self.cellphone = cellphone
-        self.hash_password = hash_password
+        self.password = password
         self.salt = salt
 
     @staticmethod
@@ -25,7 +24,7 @@ class User:
            "name": self.name,
            "email": self.email,
            "cellphone": self.cellphone,
-           "hash_password": self.hash_password,
+           "password": self.password,
            "salt": self.salt
         }
         result = db.users.insert_one(user)

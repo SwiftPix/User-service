@@ -24,16 +24,16 @@ class UserController:
         return user_id
 
     @staticmethod
-    def login(user):
+    def login(user_login):
         user = User.find_by_email(user["email"])
 
         if not user:
             raise LoginException("Usuário ou senha inválido")
         
         saved_salt = user["salt"]
-        saved_hash = user["hash_password"]
+        saved_hash = user["password"]
 
-        provided_password = bcrypt.hashpw(user["password"].encode('utf-8'), saved_salt)
+        provided_password = bcrypt.hashpw(user_login["password"].encode('utf-8'), saved_salt)
         if provided_password == saved_hash:
             return 
         else:
