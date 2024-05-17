@@ -9,9 +9,11 @@ db_client = pymongo.MongoClient(settings.MONGO_DATABASE_URI)
 db = db_client.get_database(settings.MONGO_DATABASE_NAME)
 
 class User:
-    def __init__(self, name, email, cellphone, password, salt):
+    def __init__(self, name, email, cpf, cnpj, cellphone, password, salt):
         self.name = name
         self.email = email
+        self.cpf = cpf
+        self.cnpj = cnpj
         self.cellphone = cellphone
         self.password = password
         self.salt = salt
@@ -30,6 +32,8 @@ class User:
         user = {
             "name": self.name,
             "email": self.email,
+            "cpf": self.cpf,
+            "cnpj": self.cnpj,
             "cellphone": self.cellphone,
             "password": self.password,
             "salt": self.salt,
@@ -39,6 +43,18 @@ class User:
         result = db.users.insert_one(user)
         return result.inserted_id
     
+    def find():
+        result = db.users.find({})
+        return result
+    
     def find_by_email(email):
         result = db.users.find_one({"email": email})
+        return result
+
+    def find_by_cpf(cpf):
+        result = db.users.find_one({"cpf": cpf})
+        return result
+    
+    def find_by_cnpj(cnpj):
+        result = db.users.find_one({"cnpj": cnpj})
         return result

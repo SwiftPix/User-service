@@ -14,7 +14,6 @@ def health_check():
 def create_user():
     try:
         payload = request.get_json()
-
         validated_user = UserSchema().load(payload)
         id = UserController.create_user(validated_user)
 
@@ -30,9 +29,7 @@ def create_user():
 def login():
     try:
         payload = request.get_json()
-
         user = LoginSchema().load(payload)
-
         UserController.login(user)
 
         return jsonify({"status": "success", "message": "Usuário entrou"})
