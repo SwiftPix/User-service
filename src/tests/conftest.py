@@ -1,8 +1,8 @@
 import pytest
 from flask import Flask
 from pymongo import MongoClient
-from src.main import create_app
-from src.settings import settings
+from main import create_app
+from settings import settings
 
 @pytest.fixture
 def app():

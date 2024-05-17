@@ -1,6 +1,6 @@
 from flask import Flask
-from src.views.api import bp as views_bp
-from src.settings import settings
+from views.api import bp as views_bp
+from settings import settings
 
 def create_app():
     app = Flask(__name__)

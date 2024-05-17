@@ -1,6 +1,6 @@
 import bcrypt
-from src.database.models import User
-from src.utils.exceptions import UserAlreadyExistsException, LoginException
+from database.models import User
+from utils.exceptions import UserAlreadyExistsException, LoginException
 
 class UserController:
     @staticmethod
@@ -25,7 +25,7 @@ class UserController:
 
     @staticmethod
     def login(user_login):
-        user = User.find_by_email(user["email"])
+        user = User.find_by_email(user_login["email"])
 
         if not user:
             raise LoginException("Usuário ou senha inválido")

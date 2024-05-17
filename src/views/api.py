@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
-from src.schemas import UserSchema, LoginSchema
-from src.controllers.user_controller import UserController
-from src.utils.exceptions import LoginException, UserAlreadyExistsException
+from schemas import UserSchema, LoginSchema
+from controllers.user_controller import UserController
+from utils.exceptions import LoginException, UserAlreadyExistsException
 
 bp = Blueprint("user", __name__)
 
