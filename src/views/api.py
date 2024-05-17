@@ -16,7 +16,6 @@ def create_user():
         payload = request.get_json()
 
         validated_user = UserSchema().load(payload)
-
         id = UserController.create_user(validated_user)
 
         return jsonify({"status": "success", "message": f"Usuário criado com sucesso. ID: {id}"})
