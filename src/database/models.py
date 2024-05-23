@@ -1,7 +1,7 @@
-from datetime import datetime, timezone
 import bcrypt
 import pymongo
 
+from bson.objectid import ObjectId
 from settings import settings
 from utils.index import default_datetime
 
@@ -23,10 +23,6 @@ class User:
         salt = bcrypt.gensalt()
         hash_password = bcrypt.hashpw(password.encode("utf-8"), salt)
         return hash_password, salt
-    
-    @staticmethod
-    def default_datetime():
-        return datetime.now().astimezone(timezone.utc)
 
     def save(self):
         user = {
@@ -47,6 +43,11 @@ class User:
         result = db.users.find({})
         return result
     
+    def find_by_id(user_id):
+        result = db.users.find({"_id": ObjectId(user_id)})
+        user = next(result, None)
+        return user
+    
     def find_by_email(email):
         result = db.users.find_one({"email": email})
         return result
@@ -58,3 +59,35 @@ class User:
     def find_by_cnpj(cnpj):
         result = db.users.find_one({"cnpj": cnpj})
         return result
+    
+class Document:
+    def __init__(self, document_type, file, user_id):
+        self.document_type = document_type
+        self.file = file
+        self.user_id = user_id
+
+    def save(self):
+        add_value = {
+            "$addToSet": {
+                "documents":[
+                    {
+                        "document_type": self.document_type,
+                        "file": {
+                            "file_b64": self.file["file_b64"],
+                            "content_type": self.file["content_type"],
+                            "created_at": default_datetime(),
+                            "updated_at": default_datetime(),
+                        }
+                    }
+                ]
+            }
+        }
+
+        filter = {"_id": ObjectId(self.user_id)}
+
+        result = db.users.update_one(filter, add_value)
+
+        if result.modified_count > 0:
+            return self.user_id
+        else:
+            return None

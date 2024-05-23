@@ -3,3 +3,6 @@ class UserAlreadyExistsException(Exception):
 
 class LoginException(Exception):
     pass
+
+class UserNotFound(Exception):
+    pass

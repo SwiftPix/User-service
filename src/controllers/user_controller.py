@@ -1,6 +1,6 @@
 import bcrypt
-from database.models import User
-from utils.exceptions import UserAlreadyExistsException, LoginException
+from database.models import User, Document
+from utils.exceptions import UserAlreadyExistsException, LoginException, UserNotFound
 
 class UserController:
     @staticmethod
@@ -68,3 +68,21 @@ class UserController:
             return 
         else:
             raise LoginException("Usuário ou senha inválido")
+        
+    @staticmethod
+    def create_document(document, user_id):
+
+        user = User.find_by_id(user_id)
+
+        if not user:
+            raise UserNotFound("Usuário não encontrado")
+
+        new_document = Document(
+            document_type=document["document_type"],
+            file=document["file"],
+            user_id=user_id
+        )
+
+        document_id = new_document.save()
+
+        return document_id
