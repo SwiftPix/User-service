@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
-from schemas import DocumentSchema, UserSchema, LoginSchema
+from schemas import DocumentSchema, UserSchema, LoginSchema, BiometricSchema
 from controllers.user_controller import UserController
 from utils.exceptions import LoginException, UserAlreadyExistsException, UserNotFound
 
@@ -37,6 +37,32 @@ def login():
         return jsonify({"status": 422, "message": str(e)}), 422
     except (LoginException, Exception) as e:
         return jsonify({"status": 400, "message": str(e)}), 400
+
+
+@bp.route("/send_biometry/<user_id>", methods=["POST"])
+def send_biometry(user_id):
+    try:
+        file = request.files.get("file")
+
+        if not file:
+            raise ValidationError("Tipo de documento e arquivo são obrigatórios")
+
+        payload = {
+            "file": file
+        }
+
+        biometric = BiometricSchema().load(payload)
+
+        id = UserController.save_biometric(biometric, user_id)
+        if not id:
+            return jsonify({"status": "success", "message": f"Nenhuma biometra inserida."}) 
+        return jsonify({"status": "success", "message": f"Biometria criada com sucesso. ID: {id}"})
+    except ValidationError as e:
+        return jsonify({"status": 422, "message": str(e)}), 422
+    except UserNotFound as e:
+        return jsonify({"status": 404, "message": str(e)}), 404
+    except Exception as e:
+        return jsonify({"status": 400, "message": str(e)}), 400
     
 @bp.route("/documents/<user_id>", methods=["PUT"])
 def send_documents(user_id):
@@ -58,6 +84,26 @@ def send_documents(user_id):
         if not id:
             return jsonify({"status": "success", "message": f"Nenhum documento inserido."}) 
         return jsonify({"status": "success", "message": f"Documento criado com sucesso. ID: {id}"})
+    except ValidationError as e:
+        return jsonify({"status": 422, "message": str(e)}), 422
+    except UserNotFound as e:
+        return jsonify({"status": 404, "message": str(e)}), 404
+    except Exception as e:
+        return jsonify({"status": 400, "message": str(e)}), 400
+    
+@bp.route("/biometrics/<user_id>", methods=["POST"])
+def validate_biometrics(user_id):
+    try:
+        image = request.files.get("file")
+
+        if not image:
+            raise ValidationError("Falhando aqui")
+        
+        valid = UserController.validate_biometrics(image, user_id)
+
+        if not valid:
+            return jsonify({"status": "success", "message": f"A validação biométrica falhou."}) 
+        return jsonify({"status": "success", "message": f"Biometria validada com sucesso!"})
     except ValidationError as e:
         return jsonify({"status": 422, "message": str(e)}), 422
     except UserNotFound as e:

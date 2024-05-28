@@ -1,6 +1,7 @@
-import bcrypt
-from database.models import User, Document
-from utils.exceptions import UserAlreadyExistsException, LoginException, UserNotFound
+import bcrypt, sys
+from database.models import User, Document, Biometric
+from utils.exceptions import UserAlreadyExistsException, LoginException, UserNotFound, BiometricsNotValid
+from utils.face_recog import validade_faces
 
 class UserController:
     @staticmethod
@@ -86,3 +87,41 @@ class UserController:
         document_id = new_document.save()
 
         return document_id
+    
+    @staticmethod
+    def save_biometric(biometric, user_id):
+
+        user = User.find_by_id(user_id)
+
+        if not user:
+            raise UserNotFound("Usuário não encontrado")
+
+        new_biometric = Biometric(
+            file=biometric["file"],
+            user_id=user_id
+        )
+
+        biometric_id = new_biometric.save()
+
+        return biometric_id
+    
+    @staticmethod
+    def validate_biometrics(image, user_id):
+        user = User.find_by_id(user_id)
+
+        if not user:
+            raise UserNotFound("Usuário não encontrado")
+        
+        biometric = Biometric.find_by_user_id(user_id)
+
+        if not biometric:
+            raise BiometricsNotValid("Biometria não registrada.")
+        
+        is_valid = validade_faces(image, biometric)
+
+        if is_valid:
+            return True
+        else:
+            raise BiometricsNotValid("Biometria inválida.")
+        
+

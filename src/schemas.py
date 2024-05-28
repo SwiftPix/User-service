@@ -61,7 +61,6 @@ class LoginSchema(Schema):
         if not data.get('email') and not data.get('cpf') and not data.get('cnpj'):
             raise ValidationError("É necessário fornecer pelo menos um endereço de e-mail ou cpf/cnpj")
         return data
-    
 
 class ImageSchema(Schema):
     file_b64 = fields.Str(required=True, error_messages={"required": "O arquivo é obrigatório"})
@@ -69,6 +68,26 @@ class ImageSchema(Schema):
 
 class DocumentSchema(Schema):
     document_type = fields.Str(required=True, validate=validate.OneOf(["cnh", "rne", "rg"]))
+    file = fields.Nested(ImageSchema, required=True)
+
+    @pre_load
+    def _prepare_file_field(self, data: dict = None, **kwargs) -> dict:
+        file = data.get("file")
+        if not file:
+            raise ValidationError("É necessário fornecer um arquivo.")
+        
+        file_binary = file.read()
+        file_b64 = base64.b64encode(file_binary).decode('utf-8')
+        content_type = file.content_type
+
+        file_data = {
+            "file_b64": file_b64,
+            "content_type": content_type
+        }
+        data.update({"file": file_data})
+        return data
+    
+class BiometricSchema(Schema):
     file = fields.Nested(ImageSchema, required=True)
 
     @pre_load
