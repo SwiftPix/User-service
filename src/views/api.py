@@ -38,6 +38,14 @@ def login():
     except (LoginException, Exception) as e:
         return jsonify({"status": 400, "message": str(e)}), 400
 
+@bp.route("/get_biometry_status/<user_id>", methods=["GET"])
+def get_biometry_status(user_id):
+    try:
+        _ = UserController.get_biometric(user_id)
+
+        return jsonify({"status": "success", "message": f"Cadastrado. ID: {user_id}"})
+    except Exception as e:
+        return jsonify({"status": 400, "message": str(e)}), 400
 
 @bp.route("/send_biometry/<user_id>", methods=["POST"])
 def send_biometry(user_id):

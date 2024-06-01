@@ -124,4 +124,12 @@ class UserController:
         else:
             raise BiometricsNotValid("Biometria inválida.")
         
+    @staticmethod
+    def get_biometric(user_id):
+        biometric = Biometric.find_by_user_id(user_id)
+
+        if not biometric:
+            raise Exception("Biometria não encontrada")
+        
+        return
 
