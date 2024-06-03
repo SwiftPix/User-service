@@ -49,39 +49,39 @@ def login():
     except (LoginException, Exception) as e:
         return jsonify({"status": 400, "message": str(e)}), 400
 
-# @bp.route("/get_biometry_status/<user_id>", methods=["GET"])
-# def get_biometry_status(user_id):
-#     try:
-#         _ = UserController.get_biometric(user_id)
+@bp.route("/get_biometry_status/<user_id>", methods=["GET"])
+def get_biometry_status(user_id):
+    try:
+        _ = UserController.get_biometric(user_id)
 
-#         return jsonify({"status": "success", "message": f"Cadastrado. ID: {user_id}"})
-#     except Exception as e:
-#         return jsonify({"status": 400, "message": str(e)}), 400
+        return jsonify({"status": "success", "message": f"Cadastrado. ID: {user_id}"})
+    except Exception as e:
+        return jsonify({"status": 400, "message": str(e)}), 400
 
-# @bp.route("/send_biometry/<user_id>", methods=["POST"])
-# def send_biometry(user_id):
-#     try:
-#         file = request.files.get("file")
+@bp.route("/send_biometry/<user_id>", methods=["POST"])
+def send_biometry(user_id):
+    try:
+        file = request.files.get("file")
 
-#         if not file:
-#             raise ValidationError("Tipo de documento e arquivo são obrigatórios")
+        if not file:
+            raise ValidationError("Tipo de documento e arquivo são obrigatórios")
 
-#         payload = {
-#             "file": file
-#         }
+        payload = {
+            "file": file
+        }
 
-#         biometric = BiometricSchema().load(payload)
+        biometric = BiometricSchema().load(payload)
 
-#         id = UserController.save_biometric(biometric, user_id)
-#         if not id:
-#             return jsonify({"status": "success", "message": f"Nenhuma biometra inserida."}) 
-#         return jsonify({"status": "success", "message": f"Biometria criada com sucesso. ID: {id}"})
-#     except ValidationError as e:
-#         return jsonify({"status": 422, "message": str(e)}), 422
-#     except UserNotFound as e:
-#         return jsonify({"status": 404, "message": str(e)}), 404
-#     except Exception as e:
-#         return jsonify({"status": 400, "message": str(e)}), 400
+        id = UserController.save_biometric(biometric, user_id)
+        if not id:
+            return jsonify({"status": "success", "message": f"Nenhuma biometra inserida."}) 
+        return jsonify({"status": "success", "message": f"Biometria criada com sucesso. ID: {id}"})
+    except ValidationError as e:
+        return jsonify({"status": 422, "message": str(e)}), 422
+    except UserNotFound as e:
+        return jsonify({"status": 404, "message": str(e)}), 404
+    except Exception as e:
+        return jsonify({"status": 400, "message": str(e)}), 400
     
 @bp.route("/documents/<user_id>", methods=["PUT"])
 def send_documents(user_id):
