@@ -6,3 +6,6 @@ class LoginException(Exception):
 
 class UserNotFound(Exception):
     pass
+
+class BiometricsNotValid(Exception):
+    pass

@@ -81,6 +81,41 @@ class User:
             return None
 
     
+class Biometric:
+    def __init__(self, file, user_id):
+        self.file = file
+        self.user_id = user_id
+    
+    def find_by_user_id(user_id):
+        result = db.users.find_one({"_id": ObjectId(user_id)})
+        if result:
+            return result.get("biometrics")
+        else:
+            return None
+
+    def save(self):
+        add_value = {
+            "$set": {
+                "biometrics": {
+                    "file": {
+                        "file_b64": self.file["file_b64"],
+                        "content_type": self.file["content_type"],
+                        "created_at": default_datetime(),
+                        "updated_at": default_datetime(),
+                    }
+                }
+            }
+        }
+
+        filter = {"_id": ObjectId(self.user_id)}
+
+        result = db.users.update_one(filter, add_value)
+
+        if result.modified_count > 0:
+            return self.user_id
+        else:
+            return None
+    
 class Document:
     def __init__(self, document_type, file, user_id):
         self.document_type = document_type
