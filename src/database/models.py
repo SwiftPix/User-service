@@ -9,7 +9,7 @@ db_client = pymongo.MongoClient(settings.MONGO_DATABASE_URI)
 db = db_client.get_database(settings.MONGO_DATABASE_NAME)
 
 class User:
-    def __init__(self, name, email, cpf, cnpj, cellphone, currency, balance, password, salt):
+    def __init__(self, name, email, cpf, cnpj, cellphone, currency, balance, agency, institution, account, password, salt):
         self.name = name
         self.email = email
         self.cpf = cpf
@@ -17,6 +17,9 @@ class User:
         self.cellphone = cellphone
         self.currency = currency
         self.balance = balance
+        self.agency = agency
+        self.institution = institution
+        self.account = account
         self.password = password
         self.salt = salt
 
@@ -35,6 +38,9 @@ class User:
             "cellphone": self.cellphone,
             "currency": self.currency,
             "balance": self.balance,
+            "agency": self.agency,
+            "institution": self.institution,
+            "account": self.account,
             "password": self.password,
             "salt": self.salt,
             "created_at": default_datetime(),

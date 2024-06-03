@@ -43,6 +43,9 @@ class UserController:
             cellphone=user["cellphone"],
             currency=user["currency"],
             balance=user["balance"],
+            agency=user.get("agency"),
+            institution=user.get("institution"),
+            account=user.get("account"),
             password=hash_password,
             salt=salt
         )
@@ -78,6 +81,9 @@ class UserController:
 
         if not user:
             raise UserNotFound("Usuário não encontrado")
+        user["_id"] = str(user["_id"])
+        user.pop("password")
+        user.pop("salt")
         return user
         
     @staticmethod

@@ -38,6 +38,9 @@ class UserSchema(Schema):
     cpf = fields.Str(required=False, validate=validate_cpf)
     cnpj = fields.Str(required=False, validate=validate_cnpj)
     currency = fields.Str(missing="real")
+    agency = fields.Str(missing="0001")
+    institution = fields.Str(missing="001")
+    account = fields.Str(missing="000")
     balance = fields.Float(missing=0.0)
 
     @pre_load
