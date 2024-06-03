@@ -64,3 +64,32 @@ def send_documents(user_id):
         return jsonify({"status": 404, "message": str(e)}), 404
     except Exception as e:
         return jsonify({"status": 400, "message": str(e)}), 400
+    
+@bp.route("/balance/<user_id>", methods=["GET"])
+def get_balance(user_id):
+    try:
+        response = UserController.get_balance(user_id)
+        return response
+    except UserNotFound as e:
+        return jsonify({"status": 404, "message": str(e)}), 404
+    except Exception as e:
+        return jsonify({"status": 400, "message": str(e)}), 400
+    
+@bp.route("/balance/<user_id>", methods=["PATCH"])
+def update_balance(user_id):
+    try:
+        payload = request.get_json()
+        balance = payload.get("balance")
+        if not balance:
+            raise ValidationError("Valor a ser atualizado é obrigatório")
+
+        updated_user = UserController.update_balance(balance, user_id)
+        if not updated_user:
+            return jsonify({"status": "success", "message": f"Nenhum saldo alterado."}) 
+        return jsonify({"status": "success", "message": f"Usuário atualizado."})
+    except ValidationError as e:
+        return jsonify({"status": 422, "message": str(e)}), 422
+    except UserNotFound as e:
+        return jsonify({"status": 404, "message": str(e)}), 404
+    except Exception as e:
+        return jsonify({"status": 400, "message": str(e)}), 400

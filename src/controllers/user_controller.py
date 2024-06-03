@@ -40,6 +40,8 @@ class UserController:
             cpf=user.get("cpf"),
             cnpj=user.get("cnpj"),
             cellphone=user["cellphone"],
+            currency=user["currency"],
+            balance=user["balance"],
             password=hash_password,
             salt=salt
         )
@@ -70,12 +72,17 @@ class UserController:
             raise LoginException("Usuário ou senha inválido")
         
     @staticmethod
-    def create_document(document, user_id):
-
+    def find_user_by_id(user_id):
         user = User.find_by_id(user_id)
 
         if not user:
             raise UserNotFound("Usuário não encontrado")
+        return user
+        
+    @staticmethod
+    def create_document(document, user_id):
+
+        UserController.find_user_by_id(user_id)
 
         new_document = Document(
             document_type=document["document_type"],
@@ -86,3 +93,21 @@ class UserController:
         document_id = new_document.save()
 
         return document_id
+    
+    @staticmethod
+    def get_balance(user_id):
+        user = UserController.find_user_by_id(user_id)
+        
+        result = {
+            "balance": user.get("balance"),
+            "currency": user.get("currency")
+        }
+        return result
+    
+    @staticmethod
+    def update_balance(balance, user_id): 
+        UserController.find_user_by_id(user_id)
+
+        updated_user = User.update(balance, user_id)
+
+        return updated_user

@@ -9,12 +9,14 @@ db_client = pymongo.MongoClient(settings.MONGO_DATABASE_URI)
 db = db_client.get_database(settings.MONGO_DATABASE_NAME)
 
 class User:
-    def __init__(self, name, email, cpf, cnpj, cellphone, password, salt):
+    def __init__(self, name, email, cpf, cnpj, cellphone, currency, balance, password, salt):
         self.name = name
         self.email = email
         self.cpf = cpf
         self.cnpj = cnpj
         self.cellphone = cellphone
+        self.currency = currency
+        self.balance = balance
         self.password = password
         self.salt = salt
 
@@ -31,6 +33,8 @@ class User:
             "cpf": self.cpf,
             "cnpj": self.cnpj,
             "cellphone": self.cellphone,
+            "currency": self.currency,
+            "balance": self.balance,
             "password": self.password,
             "salt": self.salt,
             "created_at": default_datetime(),
@@ -59,6 +63,23 @@ class User:
     def find_by_cnpj(cnpj):
         result = db.users.find_one({"cnpj": cnpj})
         return result
+    
+    def update(balance, user_id):
+        update_value = {
+            "$set": 
+                {
+                    "balance": balance
+                }
+        }
+        filter = {"_id": ObjectId(user_id)}
+
+        result = db.users.update_one(filter, update_value)
+
+        if result.modified_count > 0:
+            return user_id
+        else:
+            return None
+
     
 class Document:
     def __init__(self, document_type, file, user_id):

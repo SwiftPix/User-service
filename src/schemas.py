@@ -37,6 +37,8 @@ class UserSchema(Schema):
                                  validate_password_complexity])
     cpf = fields.Str(required=False, validate=validate_cpf)
     cnpj = fields.Str(required=False, validate=validate_cnpj)
+    currency = fields.Str(missing="real")
+    balance = fields.Float(missing=0.0)
 
     @pre_load
     def validate(self, data, **kwargs):
