@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
 from schemas import DocumentSchema, UserSchema, LoginSchema, BiometricSchema
 from controllers.user_controller import UserController
-from utils.exceptions import LoginException, UserAlreadyExistsException, UserNotFound
+from utils.exceptions import BiometricsNotFound, BiometricsNotValid, LoginException, UserAlreadyExistsException, UserNotFound
 
 bp = Blueprint("user", __name__)
 
@@ -46,6 +46,8 @@ def login():
         return jsonify({"status": "success", "message": "Usuário entrou"})
     except ValidationError as e:
         return jsonify({"status": 422, "message": str(e)}), 422
+    except BiometricsNotFound as e:
+        return jsonify({"status": 404, "message": str(e)}), 404
     except (LoginException, Exception) as e:
         return jsonify({"status": 400, "message": str(e)}), 400
 
@@ -78,9 +80,11 @@ def send_biometry(user_id):
         return jsonify({"status": "success", "message": f"Biometria criada com sucesso. ID: {id}"})
     except ValidationError as e:
         return jsonify({"status": 422, "message": str(e)}), 422
+    except BiometricsNotFound as e:
+        return jsonify({"status": 404, "message": str(e)}), 404
     except UserNotFound as e:
         return jsonify({"status": 404, "message": str(e)}), 404
-    except Exception as e:
+    except (BiometricsNotValid, Exception) as e:
         return jsonify({"status": 400, "message": str(e)}), 400
     
 @bp.route("/documents/<user_id>", methods=["PUT"])
@@ -116,7 +120,7 @@ def validate_biometrics(user_id):
         image = request.files.get("file")
 
         if not image:
-            raise ValidationError("Falhando aqui")
+            raise ValidationError("A imagem é obrigatória.")
         
         valid = UserController.validate_biometrics(image, user_id)
 
@@ -145,8 +149,8 @@ def update_balance(user_id):
     try:
         payload = request.get_json()
         balance = payload.get("balance")
-        if not balance:
-            raise ValidationError("Valor a ser atualizado é obrigatório")
+        if not balance or not isinstance(balance, float):
+            raise ValidationError("Valor a ser atualizado é um número e obrigatório")
 
         updated_user = UserController.update_balance(balance, user_id)
         if not updated_user:

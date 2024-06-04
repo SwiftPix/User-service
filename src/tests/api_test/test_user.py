@@ -2,7 +2,7 @@ from copy import deepcopy
 from io import BytesIO
 import json
 import re
-from tests.payloads import payload_create, payload_login, payload_documents
+from tests.payloads import payload_create, payload_login, payload_documents, payload_update_balance
 
 
 def test_create_user_success(client):
@@ -290,3 +290,120 @@ def test_login_generic_error(client, mocker):
     assert response.status_code == 400
     assert data["status"] == 400
     assert data["message"] == "Erro ao salvar documento"
+
+
+def test_update_balance_success(client):
+    """Testa o endpoint de atualizar saldo do usuário."""
+
+    response = client.post("/create", json=payload_create)
+
+    data = json.loads(response.data)
+    assert response.status_code == 200
+    match = re.search(r"ID: ([a-f0-9]{24})", data["message"])
+    assert match is not None
+    user_id = match.group(1)
+
+    response = client.patch(f"/balance/{user_id}", json=payload_update_balance)
+
+    assert response.status_code == 200
+
+
+def test_update_balance_validation_error(client):
+    """Testa o endpoint de atualizar saldo do usuário com erro de validação."""
+
+    response = client.post("/create", json=payload_create)
+
+    data = json.loads(response.data)
+    assert response.status_code == 200
+    match = re.search(r"ID: ([a-f0-9]{24})", data["message"])
+    assert match is not None
+    user_id = match.group(1)
+
+    payload_update_balance_invalid_payload = deepcopy(payload_update_balance)
+    payload_update_balance_invalid_payload["balance"] = "teste"
+
+    response = client.patch(f"/balance/{user_id}", json=payload_update_balance_invalid_payload)
+
+    assert response.status_code == 422
+
+
+def test_update_balance_user_not_found(client):
+    """Testa o endpoint de atualizar saldo do usuário com erro de usuário não encontrado."""
+
+    response = client.patch("/balance/664e9b2da3835b65a119b35d", json=payload_update_balance)
+
+    assert response.status_code == 404
+
+
+def test_update_balance_generic_error(client, mocker):
+    """Testa o endpoint de atualizar saldo do usuário com erro generico."""
+
+    response = client.post("/create", json=payload_create)
+
+    data = json.loads(response.data)
+    assert response.status_code == 200
+    match = re.search(r"ID: ([a-f0-9]{24})", data["message"])
+    assert match is not None
+    user_id = match.group(1)
+
+    mocker.patch(
+        "controllers.user_controller.UserController.update_balance", side_effect=Exception("Erro ao salvar saldo")
+    )
+
+    response = client.patch(f"/balance/{user_id}", json=payload_update_balance)
+
+    data = json.loads(response.data)
+    assert response.status_code == 400
+    assert data["status"] == 400
+    assert data["message"] == "Erro ao salvar saldo"
+
+
+def test_get_balance_success(client):
+    """Testa o endpoint de buscar saldo do usuário."""
+
+    response = client.post("/create", json=payload_create)
+
+    data = json.loads(response.data)
+    assert response.status_code == 200
+    match = re.search(r"ID: ([a-f0-9]{24})", data["message"])
+    assert match is not None
+    user_id = match.group(1)
+    expected_response = {
+        "currency": "real",
+        "balance": 0.0
+    }
+
+    response = client.get(f"/balance/{user_id}")
+    assert response.status_code == 200
+    assert response.json == expected_response
+
+
+def test_get_balance_user_not_found(client):
+    """Testa o endpoint de buscar saldo do usuário com erro de usuário não encontrado."""
+
+    response = client.get("/balance/664e9b2da3835b65a119b35d")
+
+    assert response.status_code == 404
+
+
+def test_update_balance_generic_error(client, mocker):
+    """Testa o endpoint de atualizar saldo do usuário com erro generico."""
+
+    response = client.post("/create", json=payload_create)
+
+    data = json.loads(response.data)
+    assert response.status_code == 200
+    match = re.search(r"ID: ([a-f0-9]{24})", data["message"])
+    assert match is not None
+    user_id = match.group(1)
+
+    mocker.patch(
+        "controllers.user_controller.UserController.get_balance", side_effect=Exception("Erro ao buscar saldo")
+    )
+
+    response = client.get(f"/balance/{user_id}")
+
+    data = json.loads(response.data)
+    assert response.status_code == 400
+    assert data["status"] == 400
+    assert data["message"] == "Erro ao buscar saldo"

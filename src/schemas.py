@@ -72,7 +72,7 @@ class ImageSchema(Schema):
     content_type = fields.Str(required=True, error_messages={"required": "O tipo do arquivo é obrigatório"})
 
 class DocumentSchema(Schema):
-    document_type = fields.Str(required=True, validate=validate.OneOf(["cnh", "rne", "rg"]))
+    document_type = fields.Str(required=True, validate=validate.OneOf(["cnh", "rne", "rg", "biometrics"]))
     file = fields.Nested(ImageSchema, required=True)
 
     @pre_load

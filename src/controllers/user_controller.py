@@ -1,6 +1,6 @@
 import bcrypt, sys
-from database.models import User, Document, Biometric
-from utils.exceptions import UserAlreadyExistsException, LoginException, UserNotFound, BiometricsNotValid
+from database.models import User, Document
+from utils.exceptions import BiometricsNotFound, UserAlreadyExistsException, LoginException, UserNotFound, BiometricsNotValid
 from utils.face_recog import validade_faces
 
 class UserController:
@@ -104,12 +104,10 @@ class UserController:
     @staticmethod
     def save_biometric(biometric, user_id):
 
-        user = User.find_by_id(user_id)
+        UserController.find_user_by_id(user_id)
 
-        if not user:
-            raise UserNotFound("Usuário não encontrado")
-
-        new_biometric = Biometric(
+        new_biometric = Document(
+            document_type="biometrics",
             file=biometric["file"],
             user_id=user_id
         )
@@ -120,15 +118,7 @@ class UserController:
     
     @staticmethod
     def validate_biometrics(image, user_id):
-        user = User.find_by_id(user_id)
-
-        if not user:
-            raise UserNotFound("Usuário não encontrado")
-        
-        biometric = Biometric.find_by_user_id(user_id)
-
-        if not biometric:
-            raise BiometricsNotValid("Biometria não registrada.")
+        biometric = UserController.get_biometric(user_id)
         
         is_valid = validade_faces(image, biometric)
 
@@ -139,14 +129,14 @@ class UserController:
         
     @staticmethod
     def get_biometric(user_id):
-        biometric = Biometric.find_by_user_id(user_id)
+        user = UserController.find_user_by_id(user_id)
+        biometric = next((doc["file"] for doc in user.get("documents", []) if doc["document_type"] == "biometrics"), None)
 
         if not biometric:
-            raise Exception("Biometria não encontrada")
+            raise BiometricsNotFound("Biometria não encontrada.")
         
-        return
+        return biometric
 
-    
     @staticmethod
     def get_balance(user_id):
         user = UserController.find_user_by_id(user_id)
