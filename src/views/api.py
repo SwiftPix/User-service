@@ -60,13 +60,13 @@ def get_biometry_status(user_id):
     except Exception as e:
         return jsonify({"status": 400, "message": str(e)}), 400
 
-@bp.route("/send_biometry/<user_id>", methods=["POST"])
+@bp.route("/send_biometry/<user_id>", methods=["PUT"])
 def send_biometry(user_id):
     try:
         file = request.files.get("file")
 
         if not file:
-            raise ValidationError("Tipo de documento e arquivo são obrigatórios")
+            raise ValidationError("Arquivo é  obrigatório")
 
         payload = {
             "file": file
@@ -118,11 +118,13 @@ def send_documents(user_id):
 def validate_biometrics(user_id):
     try:
         image = request.files.get("file")
+        is_from_partner = request.form.get("integration", "False")
+        is_from_partner = is_from_partner.lower()
 
         if not image:
             raise ValidationError("A imagem é obrigatória.")
         
-        valid = UserController.validate_biometrics(image, user_id)
+        valid = UserController.validate_biometrics(image, user_id, is_from_partner)
 
         if not valid:
             return jsonify({"status": "success", "message": f"A validação biométrica falhou."}) 
@@ -160,5 +162,28 @@ def update_balance(user_id):
         return jsonify({"status": 422, "message": str(e)}), 422
     except UserNotFound as e:
         return jsonify({"status": 404, "message": str(e)}), 404
+    except Exception as e:
+        return jsonify({"status": 400, "message": str(e)}), 400
+    
+@bp.route("/send_biometry", methods=["POST"])
+def create_biometriy_for_partner():
+    try:
+        file = request.files.get("file")
+
+        if not file:
+            raise ValidationError("Tipo de documento e arquivo são obrigatórios")
+
+        payload = {
+            "file": file
+        }
+
+        biometric = BiometricSchema().load(payload)
+
+        id = UserController.save_biometric_for_partner(biometric)
+        if not id:
+            return jsonify({"status": "success", "message": f"Nenhuma biometra inserida."}) 
+        return jsonify({"status": "success", "message": f"Biometria criada com sucesso.", "usuário": str(id)})
+    except ValidationError as e:
+        return jsonify({"status": 422, "message": str(e)}), 422
     except Exception as e:
         return jsonify({"status": 400, "message": str(e)}), 400

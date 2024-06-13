@@ -1,5 +1,5 @@
 import bcrypt, sys
-from database.models import User, Document
+from database.models import PartnerBiometrics, User, Document
 from utils.exceptions import BiometricsNotFound, UserAlreadyExistsException, LoginException, UserNotFound, BiometricsNotValid
 from utils.face_recog import validade_faces
 
@@ -117,8 +117,20 @@ class UserController:
         return biometric_id
     
     @staticmethod
-    def validate_biometrics(image, user_id):
-        biometric = UserController.get_biometric(user_id)
+    def save_biometric_for_partner(biometric):
+
+        new_biometric = PartnerBiometrics(
+            file=biometric["file"]
+        )
+
+        user_id = new_biometric.save()
+
+        return user_id
+    
+    @staticmethod
+    def validate_biometrics(image, user_id, is_from_partner):
+
+        biometric = UserController.get_biometric(user_id, is_from_partner)
         
         is_valid = validade_faces(image, biometric)
 
@@ -128,13 +140,22 @@ class UserController:
             raise BiometricsNotValid("Biometria inválida.")
         
     @staticmethod
-    def get_biometric(user_id):
-        user = UserController.find_user_by_id(user_id)
-        biometric = next((doc["file"] for doc in user.get("documents", []) if doc["document_type"] == "biometrics"), None)
+    def get_biometric(user_id, is_from_partner):
+        biometric = []
+        if is_from_partner == "true":
+            user = PartnerBiometrics.find_by_user_id(user_id)
+            user = list(user)
+            for item in user:
+                biometric = item["file"]["file_b64"]
+        else:
+            user = UserController.find_user_by_id(user_id)
+            for document in user["documents"]:
+                if document["document_type"] == "biometrics":
+                    biometric = document["file"]["file_b64"]
 
         if not biometric:
             raise BiometricsNotFound("Biometria não encontrada.")
-        
+
         return biometric
 
     @staticmethod
