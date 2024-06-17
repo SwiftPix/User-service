@@ -17,7 +17,7 @@ def create_user():
         validated_user = UserSchema().load(payload)
         id = UserController.create_user(validated_user)
 
-        return jsonify({"status": "success", "message": f"Usuário criado com sucesso. ID: {id}"})
+        return jsonify({"status": "success", "message": f"Usuário criado com sucesso.", "user": str(id)})
     except UserAlreadyExistsException as e:
         return jsonify({"status": 409, "message": str(e)}), 409
     except ValidationError as e:
@@ -56,7 +56,7 @@ def get_biometry_status(user_id):
     try:
         _ = UserController.get_biometric(user_id)
 
-        return jsonify({"status": "success", "message": f"Cadastrado. ID: {user_id}"})
+        return jsonify({"status": "success", "message": f"Cadastrado.", "user": str(user_id)})
     except Exception as e:
         return jsonify({"status": 400, "message": str(e)}), 400
 
@@ -77,7 +77,7 @@ def send_biometry(user_id):
         id = UserController.save_biometric(biometric, user_id)
         if not id:
             return jsonify({"status": "success", "message": f"Nenhuma biometra inserida."}) 
-        return jsonify({"status": "success", "message": f"Biometria criada com sucesso. ID: {id}"})
+        return jsonify({"status": "success", "message": f"Biometria criada com sucesso.", "user": str(id)})
     except ValidationError as e:
         return jsonify({"status": 422, "message": str(e)}), 422
     except BiometricsNotFound as e:
@@ -106,7 +106,7 @@ def send_documents(user_id):
         id = UserController.create_document(document, user_id)
         if not id:
             return jsonify({"status": "success", "message": f"Nenhum documento inserido."}) 
-        return jsonify({"status": "success", "message": f"Documento criado com sucesso. ID: {id}"})
+        return jsonify({"status": "success", "message": f"Documento anexado com sucesso.", "user": str(id)})
     except ValidationError as e:
         return jsonify({"status": 422, "message": str(e)}), 422
     except UserNotFound as e:
@@ -182,7 +182,7 @@ def create_biometriy_for_partner():
         id = UserController.save_biometric_for_partner(biometric)
         if not id:
             return jsonify({"status": "success", "message": f"Nenhuma biometra inserida."}) 
-        return jsonify({"status": "success", "message": f"Biometria criada com sucesso.", "usuário": str(id)})
+        return jsonify({"status": "success", "message": f"Biometria criada com sucesso.", "user": str(id)})
     except ValidationError as e:
         return jsonify({"status": 422, "message": str(e)}), 422
     except Exception as e:
