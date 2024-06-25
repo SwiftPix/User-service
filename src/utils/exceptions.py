@@ -12,3 +12,6 @@ class BiometricsNotFound(Exception):
 
 class BiometricsNotValid(Exception):
     pass
+
+class CryptoException(Exception):
+    pass

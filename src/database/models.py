@@ -10,7 +10,7 @@ db = db_client.get_database(settings.MONGO_DATABASE_NAME)
 db_for_partner = db_client.get_database(settings.MONGO_BIOMETRICS_DATABASE_NAME)
 
 class User:
-    def __init__(self, name, email, cpf, cnpj, cellphone, currency, balance, agency, institution, account, password, salt):
+    def __init__(self, name, email, cpf, cnpj, cellphone, currency, balance, agency, institution, account, password):
         self.name = name
         self.email = email
         self.cpf = cpf
@@ -22,13 +22,6 @@ class User:
         self.institution = institution
         self.account = account
         self.password = password
-        self.salt = salt
-
-    @staticmethod
-    def create_hash_password(password):
-        salt = bcrypt.gensalt()
-        hash_password = bcrypt.hashpw(password.encode("utf-8"), salt)
-        return hash_password, salt
 
     def save(self):
         user = {
@@ -43,7 +36,6 @@ class User:
             "institution": self.institution,
             "account": self.account,
             "password": self.password,
-            "salt": self.salt,
             "created_at": default_datetime(),
             "updated_at": default_datetime(),
         }
