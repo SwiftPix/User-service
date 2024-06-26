@@ -1,8 +1,9 @@
 from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
-from schemas import DocumentSchema, UserSchema, LoginSchema, BiometricSchema
+from schemas import DocumentSchema, ExpensesSchema, UserSchema, LoginSchema, BiometricSchema
 from controllers.user_controller import UserController
-from utils.exceptions import BiometricsNotFound, BiometricsNotValid, LoginException, UserAlreadyExistsException, UserNotFound
+from controllers.expenses_controller import ExpensesController
+from utils.exceptions import BiometricsNotFound, BiometricsNotValid, ExpensesException, LoginException, UserAlreadyExistsException, UserNotFound
 
 bp = Blueprint("user", __name__)
 
@@ -186,4 +187,37 @@ def create_biometriy_for_partner():
     except ValidationError as e:
         return jsonify({"status": 422, "message": str(e)}), 422
     except Exception as e:
+        return jsonify({"status": 400, "message": str(e)}), 400
+    
+@bp.route("/expense/<user_id>", methods=["POST"])
+def create_expense(user_id):
+    try:
+        payload = request.get_json()
+        validated_expense = ExpensesSchema().load(payload)
+        expense= UserController.create_expense(user_id, validated_expense)
+
+        return expense
+    except UserNotFound as e:
+        return jsonify({"status": 404, "message": str(e)}), 404
+    except (ExpensesException, Exception) as e:
+        return jsonify({"status": 400, "message": str(e)}), 400
+    
+@bp.route("/expense/<user_id>", methods=["GET"])
+def get_expenses(user_id):
+    try:
+        response = UserController.get_expenses(user_id)
+        return jsonify({"status": "success", "result": response})
+    except UserNotFound as e:
+        return jsonify({"status": 404, "message": str(e)}), 404
+    except (ExpensesException, Exception) as e:
+        return jsonify({"status": 400, "message": str(e)}), 400
+
+@bp.route("/expenses", methods=["GET"])
+def get_expenses_categories():
+    try:
+        response = ExpensesController.list_expenses_categories()
+        return jsonify({"status": "success", "result": response})
+    except UserNotFound as e:
+        return jsonify({"status": 404, "message": str(e)}), 404
+    except (ExpensesException, Exception) as e:
         return jsonify({"status": 400, "message": str(e)}), 400

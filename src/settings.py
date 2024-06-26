@@ -12,5 +12,8 @@ class Settings:
         self.CRYPTO_PUBLIC_KEY = os.getenv("CRYPTO_PUBLIC_KEY", "public-key")
         self.CRYPTO_PRIVATE_KEY = os.getenv("CRYPTO_PRIVATE_KEY", "private-key")
         self.CRYPTO_URL = "https://5a7udyuiimjx3rngjs7lp4dxee0phmbl.lambda-url.us-east-1.on.aws"
+        self.EXPENSES_API = "https://back-end-d5im.onrender.com"
+        self.USER_EXPENSES_API = os.getenv("USER_EXPENSES_API" ,"email-expanses")
+        self.PASSWORD_EXPENSES_API = os.getenv("PASSWORD_EXPENSES_API" ,"123")
 
 settings = Settings()

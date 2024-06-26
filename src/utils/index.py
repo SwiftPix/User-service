@@ -1,4 +1,6 @@
 from datetime import datetime, timezone
+import random
+import string
 
 def default_datetime():
     return datetime.now().astimezone(timezone.utc)
@@ -62,3 +64,7 @@ def validate_cpf(cpf):
 
     return True
 
+def generate_random_password():
+    char = string.ascii_letters + string.digits + string.punctuation
+    password = ''.join(random.choice(char) for _ in range(6))
+    return password
