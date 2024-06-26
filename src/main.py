@@ -1,5 +1,5 @@
 from flask import Flask
-from flask_cors import CORS
+from flask_cors import CORS  # Importando o módulo CORS
 from views.api import bp as views_bp
 from settings import settings
 
