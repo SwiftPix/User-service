@@ -1,4 +1,4 @@
-import face_recognition
+# import face_recognition
 import numpy as np
 import base64
 from io import BytesIO

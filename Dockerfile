@@ -17,4 +17,6 @@ COPY . .
 
 EXPOSE 5000
 
+RUN pytest
+
 CMD ["python", "src/main.py"]
