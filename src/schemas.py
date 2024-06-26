@@ -1,9 +1,6 @@
 import base64
 import re
-import io
-from datetime import datetime
-from base64 import b64decode
-from marshmallow import Schema, fields, validate, ValidationError, pre_load, post_load
+from marshmallow import Schema, fields, validate, ValidationError, pre_load
 from utils.index import validate_cpf, validate_cnpj
 
 def validate_password_complexity(password):
@@ -18,7 +15,16 @@ def validate_password_complexity(password):
     
     if not re.search(r'[!@#$%^&*()_+{}[\]:;<>,.?~\\-]', password):
         raise ValidationError("A senha deve conter pelo menos um caractere especial")
+    
 
+class ExpensesSchema(Schema):
+    reason = fields.Str(required=True, 
+                               validate=validate.Length(min=1, error="Uma descrição é obrigatório"))
+    
+    value = fields.Float(required=True)
+    
+    category = fields.Str(required=True, 
+                               validate=validate.Length(min=1, error="Uma categoria é obrigatório"))
 
 class UserSchema(Schema):
     name = fields.Str(required=True, 

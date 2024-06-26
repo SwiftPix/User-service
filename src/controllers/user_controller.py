@@ -1,5 +1,7 @@
 from database.models import PartnerBiometrics, User, Document
 from controllers.crypt_controller import CryptController
+from controllers.expenses_controller import ExpensesController
+from utils.index import generate_random_password
 from utils.exceptions import BiometricsNotFound, UserAlreadyExistsException, LoginException, UserNotFound, BiometricsNotValid
 from utils.face_recog import validade_faces
 
@@ -40,6 +42,10 @@ class UserController:
             raise UserAlreadyExistsException("CPF já está cadastrado")
         if has_cnpj:
             raise UserAlreadyExistsException("CNPJ já está cadastrado")
+        
+        ExpensesController.auth()
+        integration_password = generate_random_password()
+        external_id = ExpensesController.register(email, integration_password)
 
         new_user = User(
             name=user["name"],
@@ -52,7 +58,8 @@ class UserController:
             agency=user.get("agency"),
             institution=user.get("institution"),
             account=user.get("account"),
-            password=crypted_password
+            password=crypted_password,
+            external_id=external_id
         )
 
         user_id = new_user.save()
@@ -200,3 +207,15 @@ class UserController:
         updated_user = User.update(balance, user_id)
 
         return updated_user
+    
+    @staticmethod
+    def create_expense(user_id, expense):
+        user = UserController.find_user_by_id(user_id)
+        external_id = user["external_id"]
+        return ExpensesController.create_expense(external_id, expense["reason"], expense["value"], expense["category"])
+
+    @staticmethod
+    def get_expenses(user_id):
+        user = UserController.find_user_by_id(user_id)
+        external_id = user["external_id"]
+        return ExpensesController.list_expenses(external_id)

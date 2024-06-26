@@ -10,7 +10,7 @@ db = db_client.get_database(settings.MONGO_DATABASE_NAME)
 db_for_partner = db_client.get_database(settings.MONGO_BIOMETRICS_DATABASE_NAME)
 
 class User:
-    def __init__(self, name, email, cpf, cnpj, cellphone, currency, balance, agency, institution, account, password):
+    def __init__(self, name, email, cpf, cnpj, cellphone, currency, balance, agency, institution, account, password, external_id):
         self.name = name
         self.email = email
         self.cpf = cpf
@@ -22,6 +22,7 @@ class User:
         self.institution = institution
         self.account = account
         self.password = password
+        self.external_id = external_id
 
     def save(self):
         user = {
@@ -36,6 +37,7 @@ class User:
             "institution": self.institution,
             "account": self.account,
             "password": self.password,
+            "external_id": self.external_id,
             "created_at": default_datetime(),
             "updated_at": default_datetime(),
         }

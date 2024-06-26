@@ -15,3 +15,6 @@ class BiometricsNotValid(Exception):
 
 class CryptoException(Exception):
     pass
+
+class ExpensesException(Exception):
+    pass
