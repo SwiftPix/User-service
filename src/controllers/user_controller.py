@@ -1,28 +1,36 @@
-import bcrypt, sys
-from database.models import User, Document, Biometric
-from utils.exceptions import UserAlreadyExistsException, LoginException, UserNotFound, BiometricsNotValid
+from database.models import PartnerBiometrics, User, Document
+from controllers.crypt_controller import CryptController
+from utils.exceptions import BiometricsNotFound, UserAlreadyExistsException, LoginException, UserNotFound, BiometricsNotValid
 from utils.face_recog import validade_faces
 
 class UserController:
     @staticmethod
     def create_user(user):
         email = user["email"]
-        cpf = user.get("cpf", "")
-        cnpj = user.get("cnpj", "")
+        cpf = user.get("cpf", None)
+        cnpj = user.get("cnpj", None)
         has_email = False
         has_cpf = False
         has_cnpj = False
 
         users = User.find()
 
+        crypted_email = CryptController.encrypt(email)
+        crypted_cpf = CryptController.encrypt(cpf)
+        crypted_cnpj = CryptController.encrypt(cnpj)
+        crypted_password = CryptController.encrypt(user["password"])
+
         for existent_user in users:
-            if existent_user.get('email') == email:
+            decrypt_email = CryptController.decrypt(existent_user.get("email", None))
+            decrypt_cpf = CryptController.decrypt(existent_user.get("cpf", None))
+            decrypt_cnpj = CryptController.decrypt(existent_user.get("cnpj", None))
+            if email == decrypt_email:
                 has_email = True
                 break
-            if existent_user.get('cpf') == cpf:
+            if cpf == decrypt_cpf:
                 has_cpf = True
                 break
-            if existent_user.get('cnpj') == cnpj:
+            if cnpj == decrypt_cnpj:
                 has_cnpj = True
                 break
 
@@ -33,21 +41,18 @@ class UserController:
         if has_cnpj:
             raise UserAlreadyExistsException("CNPJ já está cadastrado")
 
-        hash_password, salt = User.create_hash_password(user["password"])
-
         new_user = User(
             name=user["name"],
-            email=email,
-            cpf=user.get("cpf"),
-            cnpj=user.get("cnpj"),
+            email=crypted_email,
+            cpf=crypted_cpf,
+            cnpj=crypted_cnpj,
             cellphone=user["cellphone"],
             currency=user["currency"],
             balance=user["balance"],
             agency=user.get("agency"),
             institution=user.get("institution"),
             account=user.get("account"),
-            password=hash_password,
-            salt=salt
+            password=crypted_password
         )
 
         user_id = new_user.save()
@@ -56,24 +61,45 @@ class UserController:
 
     @staticmethod
     def login(user_login):
+        users = User.find()
+        login = []
+        for existent_user in users:
+            decrypt_email = CryptController.decrypt(existent_user.get("email", None))
+            decrypt_cpf = CryptController.decrypt(existent_user.get("cpf", None))
+            decrypt_cnpj = CryptController.decrypt(existent_user.get("cnpj", None))
+            decrypt_password = CryptController.decrypt(existent_user.get("password"))
+            user_dict = {
+                "email": decrypt_email,
+                "cpf": decrypt_cpf,
+                "cnpj": decrypt_cnpj,
+                "password": decrypt_password
+            }
+            login.append(user_dict)
+
         if user_login.get("email"):
-            user = User.find_by_email(user_login["email"])
+            field = "email"
+            user = UserController.field_in_list(login, field, user_login.get("email"))
         elif user_login.get("cpf"):
-            user = User.find_by_cpf(user_login["cpf"])
+            field = "cpf"
+            user = UserController.field_in_list(login, field, user_login.get("cpf"))
         else:
-            user = User.find_by_cnpj(user_login["cnpj"])
+            field = "cnpj"
+            user = UserController.field_in_list(login, field, user_login.get("cnpj"))
 
         if not user:
             raise LoginException("Usuário ou senha inválido")
-        
-        saved_salt = user["salt"]
-        saved_hash = user["password"]
 
-        provided_password = bcrypt.hashpw(user_login["password"].encode('utf-8'), saved_salt)
-        if provided_password == saved_hash:
+        if user["password"] == user_login["password"]:
             return 
         else:
             raise LoginException("Usuário ou senha inválido")
+        
+    @staticmethod
+    def field_in_list(list, field, field_value):
+        for dict in list:
+            if dict.get(field) == field_value:
+                return dict
+        return
         
     @staticmethod
     def find_user_by_id(user_id):
@@ -83,7 +109,6 @@ class UserController:
             raise UserNotFound("Usuário não encontrado")
         user["_id"] = str(user["_id"])
         user.pop("password")
-        user.pop("salt")
         return user
         
     @staticmethod
@@ -104,12 +129,10 @@ class UserController:
     @staticmethod
     def save_biometric(biometric, user_id):
 
-        user = User.find_by_id(user_id)
+        UserController.find_user_by_id(user_id)
 
-        if not user:
-            raise UserNotFound("Usuário não encontrado")
-
-        new_biometric = Biometric(
+        new_biometric = Document(
+            document_type="biometrics",
             file=biometric["file"],
             user_id=user_id
         )
@@ -119,16 +142,20 @@ class UserController:
         return biometric_id
     
     @staticmethod
-    def validate_biometrics(image, user_id):
-        user = User.find_by_id(user_id)
+    def save_biometric_for_partner(biometric):
 
-        if not user:
-            raise UserNotFound("Usuário não encontrado")
-        
-        biometric = Biometric.find_by_user_id(user_id)
+        new_biometric = PartnerBiometrics(
+            file=biometric["file"]
+        )
 
-        if not biometric:
-            raise BiometricsNotValid("Biometria não registrada.")
+        user_id = new_biometric.save()
+
+        return user_id
+    
+    @staticmethod
+    def validate_biometrics(image, user_id, is_from_partner):
+
+        biometric = UserController.get_biometric(user_id, is_from_partner)
         
         is_valid = validade_faces(image, biometric)
 
@@ -138,15 +165,24 @@ class UserController:
             raise BiometricsNotValid("Biometria inválida.")
         
     @staticmethod
-    def get_biometric(user_id):
-        biometric = Biometric.find_by_user_id(user_id)
+    def get_biometric(user_id, is_from_partner):
+        biometric = []
+        if is_from_partner == "true":
+            user = PartnerBiometrics.find_by_user_id(user_id)
+            user = list(user)
+            for item in user:
+                biometric = item["file"]["file_b64"]
+        else:
+            user = UserController.find_user_by_id(user_id)
+            for document in user["documents"]:
+                if document["document_type"] == "biometrics":
+                    biometric = document["file"]["file_b64"]
 
         if not biometric:
-            raise Exception("Biometria não encontrada")
-        
-        return
+            raise BiometricsNotFound("Biometria não encontrada.")
 
-    
+        return biometric
+
     @staticmethod
     def get_balance(user_id):
         user = UserController.find_user_by_id(user_id)

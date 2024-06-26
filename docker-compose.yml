@@ -9,8 +9,10 @@ services:
     depends_on:
       - mongo
     environment:
-      - MONGO_DATABASE_URI=mongodb://mongo:27017
-      - MONGO_DATABASE_NAME=user-dev
+      - MONGO_DATABASE_URI=$MONGO_DATABASE_URI
+      - MONGO_DATABASE_NAME=$MONGO_DATABASE_NAME
+      - MONGO_BIOMETRICS_DATABASE_NAME=$MONGO_BIOMETRICS_DATABASE_NAME
+      - ENVIRONMENT=$ENVIRONMENT
       - FLASK_DEBUG= 1
     volumes:
       - .:/src

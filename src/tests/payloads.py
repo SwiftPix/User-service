@@ -17,3 +17,7 @@ payload_documents = {
     "mimetype": "image/png", 
     "file_extension": "png"
 }
+
+payload_update_balance = {
+    "balance": 300.0
+}

@@ -7,5 +7,11 @@ class LoginException(Exception):
 class UserNotFound(Exception):
     pass
 
+class BiometricsNotFound(Exception):
+    pass
+
 class BiometricsNotValid(Exception):
+    pass
+
+class CryptoException(Exception):
     pass
