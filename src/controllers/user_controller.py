@@ -219,3 +219,5 @@ class UserController:
         user = UserController.find_user_by_id(user_id)
         external_id = user["external_id"]
         return ExpensesController.list_expenses(external_id)
+    
+    
