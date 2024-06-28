@@ -1,6 +1,8 @@
 from database.models import User
 from utils.index import generate_random_password
 from utils.exceptions import UserAlreadyExistsException, ValidationError
+from database.models import User
+from utils.exceptions import UserNotFoundException, InvalidCredentialsException
 
 class UserController:
     @staticmethod
@@ -47,7 +49,7 @@ class UserController:
             if has_cnpj:
                 raise UserAlreadyExistsException("CNPJ já está cadastrado")
             
-            # Criação de usuário sem a chamada ao ExpensesController
+           
             new_user = User(
                 name=name,
                 email=email,
@@ -60,7 +62,7 @@ class UserController:
                 institution=institution,
                 account=account,
                 password=password,
-                external_id=None  # Pode ser None ou qualquer valor padrão
+                external_id=None  
             )
             user_id = new_user.save()
             return user_id
@@ -70,3 +72,16 @@ class UserController:
         except Exception as e:
             print(f"Erro ao criar usuário: {e}")
             raise
+    @staticmethod
+    def authenticate_user(data):
+            try:
+                cpf = data.get('cpf')
+                password = data.get('password')
+                user = User.find_one({"cpf": cpf, "password": password})
+                if user:
+                    return user
+                else:
+                    raise InvalidCredentialsException("Credenciais inválidas")
+            except Exception as e:
+                print(f"Erro ao autenticar usuário: {e}")
+                raise
