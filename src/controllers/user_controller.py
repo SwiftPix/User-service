@@ -1,8 +1,6 @@
 from database.models import User
 from utils.index import generate_random_password
-from utils.exceptions import UserAlreadyExistsException, ValidationError
-from database.models import User
-from utils.exceptions import UserNotFoundException, InvalidCredentialsException
+from utils.exceptions import UserAlreadyExistsException, ValidationError, LoginException
 
 class UserController:
     @staticmethod
@@ -49,7 +47,6 @@ class UserController:
             if has_cnpj:
                 raise UserAlreadyExistsException("CNPJ já está cadastrado")
             
-           
             new_user = User(
                 name=name,
                 email=email,
@@ -72,16 +69,41 @@ class UserController:
         except Exception as e:
             print(f"Erro ao criar usuário: {e}")
             raise
+
     @staticmethod
-    def authenticate_user(data):
-            try:
-                cpf = data.get('cpf')
-                password = data.get('password')
-                user = User.find_one({"cpf": cpf, "password": password})
-                if user:
-                    return user
-                else:
-                    raise InvalidCredentialsException("Credenciais inválidas")
-            except Exception as e:
-                print(f"Erro ao autenticar usuário: {e}")
-                raise
+    def login(user_login):
+        users = User.find()
+        login = []
+        for existent_user in users:
+            user_dict = {
+                "email": existent_user.get("email", None),
+                "cpf": existent_user.get("cpf", None),
+                "cnpj": existent_user.get("cnpj", None),
+                "password": existent_user.get("password")
+            }
+            login.append(user_dict)
+
+        if user_login.get("email"):
+            field = "email"
+            user = UserController.field_in_list(login, field, user_login.get("email"))
+        elif user_login.get("cpf"):
+            field = "cpf"
+            user = UserController.field_in_list(login, field, user_login.get("cpf"))
+        else:
+            field = "cnpj"
+            user = UserController.field_in_list(login, field, user_login.get("cnpj"))
+
+        if not user:
+            raise LoginException("Usuário ou senha inválido")
+
+        if user["password"] == user_login["password"]:
+            return user
+        else:
+            raise LoginException("Usuário ou senha inválido")
+
+    @staticmethod
+    def field_in_list(users, field, value):
+        for user in users:
+            if user.get(field) == value:
+                return user
+        return None
