@@ -49,7 +49,7 @@ class UserController:
             if has_cnpj:
                 raise UserAlreadyExistsException("CNPJ já está cadastrado")
             
-            # Criação de usuário sem a chamada ao ExpensesController
+           
             new_user = User(
                 name=name,
                 email=email,
@@ -62,7 +62,7 @@ class UserController:
                 institution=institution,
                 account=account,
                 password=password,
-                external_id=None  # Pode ser None ou qualquer valor padrão
+                external_id=None  
             )
             user_id = new_user.save()
             return user_id
