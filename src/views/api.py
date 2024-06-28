@@ -2,10 +2,19 @@ from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
 from schemas import DocumentSchema, ExpensesSchema, UserSchema, LoginSchema, BiometricSchema
 from controllers.user_controller import UserController
+from flask_cors import CORS
 from controllers.expenses_controller import ExpensesController
 from utils.exceptions import BiometricsNotFound, BiometricsNotValid, ExpensesException, LoginException, UserAlreadyExistsException, UserNotFound
 
 bp = Blueprint("user", __name__)
+
+
+@bp.after_request
+def add_cors_headers(response):
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
+    response.headers.add("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Origin, Authorization")
+    return response
 
 @bp.route("/health", methods=["GET"])
 def health_check():
@@ -221,3 +230,6 @@ def get_expenses_categories():
         return jsonify({"status": 404, "message": str(e)}), 404
     except (ExpensesException, Exception) as e:
         return jsonify({"status": 400, "message": str(e)}), 400
+    
+
+

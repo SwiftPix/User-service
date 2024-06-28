@@ -18,3 +18,14 @@ class CryptoException(Exception):
 
 class ExpensesException(Exception):
     pass
+
+class ValidationError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+class UserNotFoundException(Exception):
+    pass
+
+class InvalidCredentialsException(Exception):
+    pass

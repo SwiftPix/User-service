@@ -14,7 +14,6 @@ class UserController:
         has_email = False
         has_cpf = False
         has_cnpj = False
-
         users = User.find()
 
         crypted_email = CryptController.encrypt(email)
@@ -36,17 +35,17 @@ class UserController:
                 has_cnpj = True
                 break
 
-        if has_email:
-            raise UserAlreadyExistsException("Email já está cadastrado")
-        if has_cpf:
-            raise UserAlreadyExistsException("CPF já está cadastrado")
-        if has_cnpj:
-            raise UserAlreadyExistsException("CNPJ já está cadastrado")
-        
+            if has_email:
+                raise UserAlreadyExistsException("Email já está cadastrado")
+            if has_cpf:
+                raise UserAlreadyExistsException("CPF já está cadastrado")
+            if has_cnpj:
+                raise UserAlreadyExistsException("CNPJ já está cadastrado")
+            
         ExpensesController.auth()
         integration_password = generate_random_password()
         external_id = ExpensesController.register(email, integration_password)
-
+            
         new_user = User(
             name=user["name"],
             email=crypted_email,
@@ -61,9 +60,7 @@ class UserController:
             password=crypted_password,
             external_id=external_id
         )
-
         user_id = new_user.save()
-
         return user_id
 
     @staticmethod
@@ -82,7 +79,6 @@ class UserController:
                 "password": decrypt_password
             }
             login.append(user_dict)
-
         if user_login.get("email"):
             field = "email"
             user = UserController.field_in_list(login, field, user_login.get("email"))
@@ -92,10 +88,8 @@ class UserController:
         else:
             field = "cnpj"
             user = UserController.field_in_list(login, field, user_login.get("cnpj"))
-
         if not user:
             raise LoginException("Usuário ou senha inválido")
-
         if user["password"] == user_login["password"]:
             return 
         else:
@@ -111,7 +105,6 @@ class UserController:
     @staticmethod
     def find_user_by_id(user_id):
         user = User.find_by_id(user_id)
-
         if not user:
             raise UserNotFound("Usuário não encontrado")
         user["_id"] = str(user["_id"])
@@ -198,30 +191,30 @@ class UserController:
 
     @staticmethod
     def get_balance(user_id):
-        user = UserController.find_user_by_id(user_id)
+            user = UserController.find_user_by_id(user_id)
+            
+            result = {
+                "balance": user.get("balance"),
+                "currency": user.get("currency")
+            }
+            return result
         
-        result = {
-            "balance": user.get("balance"),
-            "currency": user.get("currency")
-        }
-        return result
-    
     @staticmethod
     def update_balance(balance, user_id): 
-        UserController.find_user_by_id(user_id)
+            UserController.find_user_by_id(user_id)
 
-        updated_user = User.update(balance, user_id)
+            updated_user = User.update(balance, user_id)
 
-        return updated_user
-    
+            return updated_user
+        
     @staticmethod
     def create_expense(user_id, expense):
-        user = UserController.find_user_by_id(user_id)
-        external_id = user["external_id"]
-        return ExpensesController.create_expense(external_id, expense["reason"], expense["value"], expense["category"])
+            user = UserController.find_user_by_id(user_id)
+            external_id = user["external_id"]
+            return ExpensesController.create_expense(external_id, expense["reason"], expense["value"], expense["category"])
 
     @staticmethod
     def get_expenses(user_id):
-        user = UserController.find_user_by_id(user_id)
-        external_id = user["external_id"]
-        return ExpensesController.list_expenses(external_id)
+            user = UserController.find_user_by_id(user_id)
+            external_id = user["external_id"]
+            return ExpensesController.list_expenses(external_id)
