@@ -115,6 +115,12 @@ class UserController:
         if not user:
             raise UserNotFound("Usuário não encontrado")
         user["_id"] = str(user["_id"])
+        if user["cpf"]:
+            user["cpf"] = CryptController.decrypt(user["cpf"])
+        if user["cnpj"]:
+            user["cnpj"] = CryptController.decrypt(user["cnpj"])
+        if user["email"]:
+            user["email"] = CryptController.decrypt(user["email"])
         user.pop("password")
         return user
         

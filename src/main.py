@@ -9,7 +9,6 @@ def create_app():
 
     app.config.from_object(settings)
     app.register_blueprint(views_bp)
-    CORS(views_bp)
 
     return app
 
