@@ -26,13 +26,13 @@ class UserController:
             decrypt_email = CryptController.decrypt(existent_user.get("email", None))
             decrypt_cpf = CryptController.decrypt(existent_user.get("cpf", None))
             decrypt_cnpj = CryptController.decrypt(existent_user.get("cnpj", None))
-            if email == decrypt_email:
+            if email and email == decrypt_email:
                 has_email = True
                 break
-            if cpf == decrypt_cpf:
+            if cpf and cpf == decrypt_cpf:
                 has_cpf = True
                 break
-            if cnpj == decrypt_cnpj:
+            if cnpj and cnpj == decrypt_cnpj:
                 has_cnpj = True
                 break
 
