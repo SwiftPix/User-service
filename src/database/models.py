@@ -1,16 +1,12 @@
-import bcrypt
-import pymongo
-
-from bson.objectid import ObjectId
+from pymongo import MongoClient
 from settings import settings
-from utils.index import default_datetime
 
-db_client = pymongo.MongoClient(settings.MONGO_DATABASE_URI)
-db = db_client.get_database(settings.MONGO_DATABASE_NAME)
-db_for_partner = db_client.get_database(settings.MONGO_BIOMETRICS_DATABASE_NAME)
+client = MongoClient(settings.MONGO_DATABASE_URI)
+db = client[settings.MONGO_DATABASE_NAME]
+users_collection = db[settings.USER_COLLECTION]
 
 class User:
-    def __init__(self, name, email, cpf, cnpj, cellphone, currency, balance, agency, institution, account, password, external_id):
+    def __init__(self, name, email, cpf=None, cnpj=None, cellphone=None, currency=None, balance=0.0, agency=None, institution=None, account=None, password=None, external_id=None):
         self.name = name
         self.email = email
         self.cpf = cpf
@@ -25,116 +21,10 @@ class User:
         self.external_id = external_id
 
     def save(self):
-        user = {
-            "name": self.name,
-            "email": self.email,
-            "cpf": self.cpf,
-            "cnpj": self.cnpj,
-            "cellphone": self.cellphone,
-            "currency": self.currency,
-            "balance": self.balance,
-            "agency": self.agency,
-            "institution": self.institution,
-            "account": self.account,
-            "password": self.password,
-            "external_id": self.external_id,
-            "created_at": default_datetime(),
-            "updated_at": default_datetime(),
-        }
-        result = db.users.insert_one(user)
+        user_data = self.__dict__
+        result = users_collection.insert_one(user_data)
         return result.inserted_id
-    
+
+    @staticmethod
     def find():
-        result = db.users.find({})
-        return result
-    
-    def find_by_id(user_id):
-        result = db.users.find({"_id": ObjectId(user_id)})
-        user = next(result, None)
-        return user
-    
-    def find_by_email(email):
-        result = db.users.find_one({"email": email})
-        return result
-
-    def find_by_cpf(cpf):
-        result = db.users.find_one({"cpf": cpf})
-        return result
-    
-    def find_by_cnpj(cnpj):
-        result = db.users.find_one({"cnpj": cnpj})
-        return result
-    
-    def update(balance, user_id):
-        update_value = {
-            "$set": 
-                {
-                    "balance": balance
-                }
-        }
-        filter = {"_id": ObjectId(user_id)}
-
-        result = db.users.update_one(filter, update_value)
-
-        if result.modified_count > 0:
-            return user_id
-        else:
-            return None
-
-    
-class Document:
-    def __init__(self, document_type, file, user_id):
-        self.document_type = document_type
-        self.file = file
-        self.user_id = user_id
-
-    def save(self):
-        add_value = {
-            "$addToSet": {
-                "documents":
-                {
-                    "document_type": self.document_type,
-                    "file": {
-                        "file_b64": self.file["file_b64"],
-                        "content_type": self.file["content_type"],
-                        "created_at": default_datetime(),
-                        "updated_at": default_datetime(),
-                    }
-                }
-            }
-        }
-
-        filter = {"_id": ObjectId(self.user_id)}
-
-        result = db.users.update_one(filter, add_value)
-
-        if result.modified_count > 0:
-            return self.user_id
-        else:
-            return None
-        
-
-class PartnerBiometrics:
-    def __init__(self, file):
-        self.file = file
-        
-    def save(self):
-        user_id = ObjectId()
-        partner_biometrics = {
-            "file": {
-                "file_b64": self.file["file_b64"],
-                "content_type": self.file["content_type"],
-                "created_at": default_datetime(),
-                "updated_at": default_datetime(),
-            },
-            "user_id": user_id,
-            "created_at": default_datetime(),
-            "updated_at": default_datetime(),
-        }
-
-        db_for_partner.biometrics.insert_one(partner_biometrics)
-        return user_id
-    
-    def find_by_user_id(user_id):
-        result = db_for_partner.biometrics.find({"user_id": ObjectId(user_id)})
-        return result
+        return list(users_collection.find())
