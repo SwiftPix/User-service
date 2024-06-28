@@ -1,6 +1,7 @@
 from database.models import User
 from utils.index import generate_random_password
 from utils.exceptions import UserAlreadyExistsException, ValidationError, LoginException
+from controllers.expenses_controller import ExpensesController
 
 class UserController:
     @staticmethod
@@ -107,3 +108,32 @@ class UserController:
             if user.get(field) == value:
                 return user
         return None
+    @staticmethod
+    def get_balance(user_id):
+            user = UserController.find_user_by_id(user_id)
+            
+            result = {
+                "balance": user.get("balance"),
+                "currency": user.get("currency")
+            }
+            return result
+        
+    @staticmethod
+    def update_balance(balance, user_id): 
+            UserController.find_user_by_id(user_id)
+
+            updated_user = User.update(balance, user_id)
+
+            return updated_user
+        
+    @staticmethod
+    def create_expense(user_id, expense):
+            user = UserController.find_user_by_id(user_id)
+            external_id = user["external_id"]
+            return ExpensesController.create_expense(external_id, expense["reason"], expense["value"], expense["category"])
+
+    @staticmethod
+    def get_expenses(user_id):
+            user = UserController.find_user_by_id(user_id)
+            external_id = user["external_id"]
+            return ExpensesController.list_expenses(external_id)
