@@ -1,9 +1,13 @@
+import logging
 from database.models import PartnerBiometrics, User, Document
 from controllers.crypt_controller import CryptController
 from controllers.expenses_controller import ExpensesController
 from utils.index import generate_random_password
 from utils.exceptions import BiometricsNotFound, UserAlreadyExistsException, LoginException, UserNotFound, BiometricsNotValid
 from utils.face_recog import validade_faces
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 class UserController:
     @staticmethod
@@ -36,10 +40,13 @@ class UserController:
                 break
 
             if has_email:
+                logger.error("Email já está cadastrado")
                 raise UserAlreadyExistsException("Email já está cadastrado")
             if has_cpf:
+                logger.error("CPF já está cadastrado")
                 raise UserAlreadyExistsException("CPF já está cadastrado")
             if has_cnpj:
+                logger.error("CNPJ já está cadastrado")
                 raise UserAlreadyExistsException("CNPJ já está cadastrado")
             
         ExpensesController.auth()
@@ -61,6 +68,7 @@ class UserController:
             external_id=external_id
         )
         user_id = new_user.save()
+        logger.info(f"Usuário criado com sucesso. {user_id}")
         return user_id
 
     @staticmethod
@@ -89,10 +97,12 @@ class UserController:
             field = "cnpj"
             user = UserController.field_in_list(login, field, user_login.get("cnpj"))
         if not user:
+            logger.error("Usuário ou senha inválido")
             raise LoginException("Usuário ou senha inválido")
         if user["password"] == user_login["password"]:
             return 
         else:
+            logger.error("Usuário ou senha inválido")
             raise LoginException("Usuário ou senha inválido")
         
     @staticmethod
@@ -106,6 +116,7 @@ class UserController:
     def find_user_by_id(user_id):
         user = User.find_by_id(user_id)
         if not user:
+            logger.error("Usuário não encontrado")
             raise UserNotFound("Usuário não encontrado")
         user["_id"] = str(user["_id"])
         if user["cpf"]:
@@ -130,6 +141,7 @@ class UserController:
 
         document_id = new_document.save()
 
+        logger.info(f"Documento salvo. {document_id}")
         return document_id
     
     @staticmethod
@@ -145,6 +157,7 @@ class UserController:
 
         biometric_id = new_biometric.save()
 
+        logger.info(f"Biometria salvo. {biometric_id}")
         return biometric_id
     
     @staticmethod

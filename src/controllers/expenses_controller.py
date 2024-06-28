@@ -1,9 +1,13 @@
+import logging
 import requests
 from datetime import datetime
 from settings import settings
 from utils.exceptions import ExpensesException
 
 headers = {"Content-Type": "application/json"}
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class ExpensesController:
@@ -17,8 +21,9 @@ class ExpensesController:
         url = f"{settings.EXPENSES_API}/auth"
 
         response = requests.post(url, json=payload, headers=headers)
-
+        logger.info(f"Resposta do servidor de despesas: {response.status_code}")
         if response.status_code != 200:
+            logger.error("Não foi possível comunicar com o servidor de despesas")
             raise ExpensesException("Não foi possível comunicar com o servidor de despesas")
         return
     
@@ -33,7 +38,10 @@ class ExpensesController:
 
         response = requests.post(url, json=payload, headers=headers)
 
+        logger.info(f"Resposta do servidor de despesas: {response.status_code}")
+
         if response.status_code != 201:
+            logger.error("Não foi possível comunicar com o servidor de despesas")
             raise ExpensesException("Não foi possível comunicar com o servidor de despesas")
         data = response.json()
         return data["id"]
@@ -53,7 +61,10 @@ class ExpensesController:
 
         response = requests.post(url, json=payload, headers=headers)
 
+        logger.info(f"Resposta do servidor de despesas: {response.status_code}")
+
         if response.status_code != 200:
+            logger.error("Não foi possível comunicar com o servidor de despesas")
             raise ExpensesException("Não foi possível comunicar com o servidor de despesas")
         data = response.json()
         return data
@@ -64,7 +75,10 @@ class ExpensesController:
 
         response = requests.get(url, headers=headers)
 
+        logger.info(f"Resposta do servidor de despesas: {response.status_code}")
+
         if response.status_code != 200:
+            logger.error("Não foi possível comunicar com o servidor de despesas")
             raise ExpensesException("Não foi possível comunicar com o servidor de despesas")
         data = response.json()
         return data
@@ -75,7 +89,10 @@ class ExpensesController:
 
         response = requests.get(url, headers=headers)
 
+        logger.info(f"Resposta do servidor de despesas: {response.status_code}")
+
         if response.status_code != 200:
+            logger.error("Não foi possível comunicar com o servidor de despesas")
             raise ExpensesException("Não foi possível comunicar com o servidor de despesas")
         data = response.json()
         return data

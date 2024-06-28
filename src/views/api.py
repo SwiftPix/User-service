@@ -1,3 +1,4 @@
+import logging
 from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
 from schemas import DocumentSchema, ExpensesSchema, UserSchema, LoginSchema, BiometricSchema
@@ -8,6 +9,8 @@ from utils.exceptions import BiometricsNotFound, BiometricsNotValid, ExpensesExc
 
 bp = Blueprint("user", __name__)
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 @bp.after_request
 def add_cors_headers(response):
@@ -29,10 +32,13 @@ def create_user():
 
         return jsonify({"status": "success", "message": f"Usuário criado com sucesso.", "user": str(id)})
     except UserAlreadyExistsException as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 409, "message": str(e)}), 409
     except ValidationError as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 422, "message": str(e)}), 422
     except Exception as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 400, "message": str(e)}), 400
     
 @bp.route("/user/<user_id>", methods=["GET"])
@@ -42,8 +48,10 @@ def get_user(user_id):
 
         return user
     except UserNotFound as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 404, "message": str(e)}), 404
     except Exception as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 400, "message": str(e)}), 400
 
 @bp.route("/login", methods=["POST"])
@@ -55,10 +63,13 @@ def login():
 
         return jsonify({"status": "success", "message": "Usuário entrou"})
     except ValidationError as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 422, "message": str(e)}), 422
     except BiometricsNotFound as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 404, "message": str(e)}), 404
     except (LoginException, Exception) as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 400, "message": str(e)}), 400
 
 @bp.route("/get_biometry_status/<user_id>", methods=["GET"])
@@ -68,6 +79,7 @@ def get_biometry_status(user_id):
 
         return jsonify({"status": "success", "message": f"Cadastrado.", "user": str(user_id)})
     except Exception as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 400, "message": str(e)}), 400
 
 @bp.route("/send_biometry/<user_id>", methods=["PUT"])
@@ -89,12 +101,16 @@ def send_biometry(user_id):
             return jsonify({"status": "success", "message": f"Nenhuma biometra inserida."}) 
         return jsonify({"status": "success", "message": f"Biometria criada com sucesso.", "user": str(id)})
     except ValidationError as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 422, "message": str(e)}), 422
     except BiometricsNotFound as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 404, "message": str(e)}), 404
     except UserNotFound as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 404, "message": str(e)}), 404
     except (BiometricsNotValid, Exception) as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 400, "message": str(e)}), 400
     
 @bp.route("/documents/<user_id>", methods=["PUT"])
@@ -118,10 +134,13 @@ def send_documents(user_id):
             return jsonify({"status": "success", "message": f"Nenhum documento inserido."}) 
         return jsonify({"status": "success", "message": f"Documento anexado com sucesso.", "user": str(id)})
     except ValidationError as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 422, "message": str(e)}), 422
     except UserNotFound as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 404, "message": str(e)}), 404
     except Exception as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 400, "message": str(e)}), 400
     
 @bp.route("/biometrics/<user_id>", methods=["POST"])
@@ -140,10 +159,13 @@ def validate_biometrics(user_id):
             return jsonify({"status": "success", "message": f"A validação biométrica falhou."}) 
         return jsonify({"status": "success", "message": f"Biometria validada com sucesso!"})
     except ValidationError as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 422, "message": str(e)}), 422
     except UserNotFound as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 404, "message": str(e)}), 404
     except Exception as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 400, "message": str(e)}), 400
     
 @bp.route("/balance/<user_id>", methods=["GET"])
@@ -152,8 +174,10 @@ def get_balance(user_id):
         response = UserController.get_balance(user_id)
         return response
     except UserNotFound as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 404, "message": str(e)}), 404
     except Exception as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 400, "message": str(e)}), 400
     
 @bp.route("/balance/<user_id>", methods=["PATCH"])
@@ -169,10 +193,13 @@ def update_balance(user_id):
             return jsonify({"status": "success", "message": f"Nenhum saldo alterado."}) 
         return jsonify({"status": "success", "message": f"Usuário atualizado."})
     except ValidationError as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 422, "message": str(e)}), 422
     except UserNotFound as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 404, "message": str(e)}), 404
     except Exception as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 400, "message": str(e)}), 400
     
 @bp.route("/send_biometry", methods=["POST"])
@@ -194,8 +221,10 @@ def create_biometriy_for_partner():
             return jsonify({"status": "success", "message": f"Nenhuma biometra inserida."}) 
         return jsonify({"status": "success", "message": f"Biometria criada com sucesso.", "user": str(id)})
     except ValidationError as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 422, "message": str(e)}), 422
     except Exception as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 400, "message": str(e)}), 400
     
 @bp.route("/expense/<user_id>", methods=["POST"])
@@ -207,8 +236,10 @@ def create_expense(user_id):
 
         return expense
     except UserNotFound as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 404, "message": str(e)}), 404
     except (ExpensesException, Exception) as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 400, "message": str(e)}), 400
     
 @bp.route("/expense/<user_id>", methods=["GET"])
@@ -217,8 +248,10 @@ def get_expenses(user_id):
         response = UserController.get_expenses(user_id)
         return jsonify({"status": "success", "result": response})
     except UserNotFound as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 404, "message": str(e)}), 404
     except (ExpensesException, Exception) as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 400, "message": str(e)}), 400
 
 @bp.route("/expenses", methods=["GET"])
@@ -227,8 +260,10 @@ def get_expenses_categories():
         response = ExpensesController.list_expenses_categories()
         return jsonify({"status": "success", "result": response})
     except UserNotFound as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 404, "message": str(e)}), 404
     except (ExpensesException, Exception) as e:
+        logger.error(f"Error: {str(e)}")
         return jsonify({"status": 400, "message": str(e)}), 400
     
 
