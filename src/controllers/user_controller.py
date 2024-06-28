@@ -1,6 +1,8 @@
 from database.models import User
 from utils.index import generate_random_password
 from utils.exceptions import UserAlreadyExistsException, ValidationError
+from database.models import User
+from utils.exceptions import UserNotFoundException, InvalidCredentialsException
 
 class UserController:
     @staticmethod
@@ -70,3 +72,16 @@ class UserController:
         except Exception as e:
             print(f"Erro ao criar usuário: {e}")
             raise
+    @staticmethod
+    def authenticate_user(data):
+            try:
+                cpf = data.get('cpf')
+                password = data.get('password')
+                user = User.find_one({"cpf": cpf, "password": password})
+                if user:
+                    return user
+                else:
+                    raise InvalidCredentialsException("Credenciais inválidas")
+            except Exception as e:
+                print(f"Erro ao autenticar usuário: {e}")
+                raise
