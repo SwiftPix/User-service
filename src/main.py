@@ -5,10 +5,8 @@ from settings import settings
 
 def create_app():
     app = Flask(__name__)
-    
-    # Aplicar CORS a todas as rotas e para todas as origens
-    CORS(app, resources={r"/*": {"origins": "*"}})  # Atenção ao uso de "*", ajuste conforme necessário para segurança
 
+    CORS(app, resources={r"/": {"origins": ""}}, supports_credentials=True)
     app.config.from_object(settings)
     app.register_blueprint(views_bp)
     
