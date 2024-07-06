@@ -4,7 +4,7 @@ from controllers.crypt_controller import CryptController
 from controllers.expenses_controller import ExpensesController
 from utils.index import generate_random_password
 from utils.exceptions import BiometricsNotFound, UserAlreadyExistsException, LoginException, UserNotFound, BiometricsNotValid
-from utils.face_recog import validade_faces
+from utils.face_recog import ValidateBiometric
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -39,15 +39,15 @@ class UserController:
                 has_cnpj = True
                 break
 
-            if has_email:
-                logger.error("Email já está cadastrado")
-                raise UserAlreadyExistsException("Email já está cadastrado")
-            if has_cpf:
-                logger.error("CPF já está cadastrado")
-                raise UserAlreadyExistsException("CPF já está cadastrado")
-            if has_cnpj:
-                logger.error("CNPJ já está cadastrado")
-                raise UserAlreadyExistsException("CNPJ já está cadastrado")
+        if has_email:
+            logger.error("Email já está cadastrado")
+            raise UserAlreadyExistsException("Email já está cadastrado")
+        if has_cpf:
+            logger.error("CPF já está cadastrado")
+            raise UserAlreadyExistsException("CPF já está cadastrado")
+        if has_cnpj:
+            logger.error("CNPJ já está cadastrado")
+            raise UserAlreadyExistsException("CNPJ já está cadastrado")
             
         ExpensesController.auth()
         integration_password = generate_random_password()
@@ -175,8 +175,7 @@ class UserController:
     def validate_biometrics(image, user_id, is_from_partner):
 
         biometric = UserController.get_biometric(user_id, is_from_partner)
-        
-        is_valid = validade_faces(image, biometric)
+        is_valid = ValidateBiometric().validate_faces(image, biometric)
 
         if is_valid:
             return True
@@ -193,10 +192,11 @@ class UserController:
                 biometric = item["file"]["file_b64"]
         else:
             user = UserController.find_user_by_id(user_id)
+            if not user.get("documents"):
+                raise BiometricsNotFound("Biometria não encontrada.")
             for document in user["documents"]:
                 if document["document_type"] == "biometrics":
                     biometric = document["file"]["file_b64"]
-
         if not biometric:
             raise BiometricsNotFound("Biometria não encontrada.")
 
