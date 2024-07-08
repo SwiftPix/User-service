@@ -75,9 +75,14 @@ def login():
 @bp.route("/get_biometry_status/<user_id>", methods=["GET"])
 def get_biometry_status(user_id):
     try:
-        _ = UserController.get_biometric(user_id)
+        is_from_partner = request.args.get('integration', 'False')
+        is_from_partner = is_from_partner.lower()
+        _ = UserController.get_biometric(user_id, is_from_partner)
 
         return jsonify({"status": "success", "message": f"Cadastrado.", "user": str(user_id)})
+    except (BiometricsNotFound, UserNotFound) as e:
+        logger.error(f"Error: {str(e)}")
+        return jsonify({"status": 404, "message": str(e)}), 404
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         return jsonify({"status": 400, "message": str(e)}), 400
@@ -88,7 +93,7 @@ def send_biometry(user_id):
         file = request.files.get("file")
 
         if not file:
-            raise ValidationError("Arquivo é  obrigatório")
+            raise ValidationError("Arquivo é obrigatório")
 
         payload = {
             "file": file
@@ -161,10 +166,10 @@ def validate_biometrics(user_id):
     except ValidationError as e:
         logger.error(f"Error: {str(e)}")
         return jsonify({"status": 422, "message": str(e)}), 422
-    except UserNotFound as e:
+    except (BiometricsNotFound, UserNotFound) as e:
         logger.error(f"Error: {str(e)}")
         return jsonify({"status": 404, "message": str(e)}), 404
-    except Exception as e:
+    except (BiometricsNotValid, Exception) as e:
         logger.error(f"Error: {str(e)}")
         return jsonify({"status": 400, "message": str(e)}), 400
     
@@ -259,9 +264,6 @@ def get_expenses_categories():
     try:
         response = ExpensesController.list_expenses_categories()
         return jsonify({"status": "success", "result": response})
-    except UserNotFound as e:
-        logger.error(f"Error: {str(e)}")
-        return jsonify({"status": 404, "message": str(e)}), 404
     except (ExpensesException, Exception) as e:
         logger.error(f"Error: {str(e)}")
         return jsonify({"status": 400, "message": str(e)}), 400

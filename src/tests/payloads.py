@@ -18,6 +18,20 @@ payload_documents = {
     "file_extension": "png"
 }
 
+payload_biometrics = {
+    "document_type": "biometrics",
+    "mimetype": "image/png", 
+    "file_extension": "png"
+}
+
+payload_biometric_from_partner = {"integration": True}
+
 payload_update_balance = {
     "balance": 300.0
+}
+
+payload_expenses = {
+    "reason": "Compras do mês",
+    "value": 500.0,
+    "category": "adb59d31-d222-44af-b24c-c3cfbd658b4c"
 }
