@@ -46,4 +46,4 @@ export PYTHONPATH={Caminho completp até a pasta src}
 pytest
 ```
 
-# OBS.: Para execução correta dos serviços é necessário que as variáveis de ambiente estejam corretamente definidas no settings.py, por segurança as envs são definidas no cluster ao buildar o serviço, seus reais valores não estão definidos nesse serviço. Solicitar aos membros do grupo as variáveis corretas caso necessário.
+## OBS.: Para execução correta dos serviços é necessário que as variáveis de ambiente estejam corretamente definidas no settings.py, por segurança as envs são definidas no cluster ao buildar o serviço, seus reais valores não estão definidos nesse serviço. Solicitar aos membros do grupo as variáveis corretas caso necessário.
