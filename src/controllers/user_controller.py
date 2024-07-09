@@ -84,7 +84,8 @@ class UserController:
                 "email": decrypt_email,
                 "cpf": decrypt_cpf,
                 "cnpj": decrypt_cnpj,
-                "password": decrypt_password
+                "password": decrypt_password,
+                "user_id": existent_user.get("_id")
             }
             login.append(user_dict)
         if user_login.get("email"):
@@ -100,7 +101,7 @@ class UserController:
             logger.error("Usuário ou senha inválido")
             raise LoginException("Usuário ou senha inválido")
         if user["password"] == user_login["password"]:
-            return 
+            return user["user_id"]
         else:
             logger.error("Usuário ou senha inválido")
             raise LoginException("Usuário ou senha inválido")
