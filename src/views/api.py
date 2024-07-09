@@ -59,9 +59,9 @@ def login():
     try:
         payload = request.get_json()
         user = LoginSchema().load(payload)
-        UserController.login(user)
+        user_id = UserController.login(user)
 
-        return jsonify({"status": "success", "message": "Usuário entrou"})
+        return jsonify({"status": "success", "message": "Usuário entrou", "user": str(user_id)})
     except ValidationError as e:
         logger.error(f"Error: {str(e)}")
         return jsonify({"status": 422, "message": str(e)}), 422
